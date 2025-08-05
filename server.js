@@ -4,36 +4,47 @@ const bodyParser = require('body-parser');
 const { MongoClient } = require('mongodb');
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(bodyParser.json());
 
+// ✅ Use the full MongoDB connection string
+const uri = 'mongodb+srv://priyanshirathor19:IqVHV5PxQRFlRElf@cluster0.p2oqm3c.mongodb.net/image_generation?retryWrites=true&w=majority&ssl=true';
 
-const uri = 
-// 'mongodb://localhost:27017/imgGen';
-'mongodb+srv://priyanshirathor19:IqVHV5PxQRFlRElf@cluster0.p2oqm3c.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
-const client = new MongoClient(uri);
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: '1',
+    strict: true,
+    deprecationErrors: true,
+  },
+});
 
 let promptsCollection;
+let connected = false;
 
-// MongoDB connection
+// ✅ MongoDB connection
 async function connectDB() {
   try {
-    await client.connect();
-    const db = client.db('image_generation');
-    promptsCollection = db.collection('prompts');
-    console.log('Connected to MongoDB');
+    if (!connected) {
+      await client.connect();
+      const db = client.db('image_generation');
+      promptsCollection = db.collection('prompts');
+      connected = true;
+      console.log('✅ Connected to MongoDB Atlas');
+    }
   } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
+    console.error('❌ Error connecting to MongoDB:', error.message);
   }
 }
 
 connectDB();
 
+// ✅ Image generation endpoint
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;
+
     if (!prompt) {
       return res.status(400).json({ error: 'Prompt is required' });
     }
@@ -46,14 +57,14 @@ app.post('/api/generate-image', async (req, res) => {
       createdAt: new Date(),
     });
 
-    res.json({ imageUrl });
+    res.status(200).json({ imageUrl });
   } catch (error) {
-    console.error('Error generating image:', error);
+    console.error('❌ Error generating image:', error.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-
+// ✅ Start server
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`🚀 Server running on http://localhost:${port}`);
 });
