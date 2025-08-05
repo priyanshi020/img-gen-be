@@ -10,7 +10,9 @@ app.use(cors());
 app.use(bodyParser.json());
 
 
-const uri = 'mongodb://localhost:27017/imgGen';
+const uri = 
+// 'mongodb://localhost:27017/imgGen';
+'mongodb+srv://priyanshirathor19:IqVHV5PxQRFlRElf@cluster0.p2oqm3c.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 const client = new MongoClient(uri);
 
 let promptsCollection;
